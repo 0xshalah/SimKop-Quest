@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { SCENARIOS } from "@/lib/game/scenarios";
 import { QUIZ, scoreQuiz } from "@/lib/game/quiz";
@@ -46,6 +46,7 @@ export default function GameDemo() {
   const rotate = useTransform(x, [-200, 200], [-14, 14]);
   const yesOpacity = useTransform(x, [20, 120], [0, 1]);
   const noOpacity = useTransform(x, [-120, -20], [1, 0]);
+  const busyRef = useRef(false);
 
   const scenario = useMemo(() => SCENARIOS[order[idx % order.length]!]!, [order, idx]);
   const preScore = useMemo(() => scoreQuiz(preAns), [preAns]);
@@ -85,7 +86,6 @@ export default function GameDemo() {
     const out = checkOutcome(m, turnsPlayed);
     setMetrics(m);
     setDecisions(newDecisions);
-    x.set(0);
 
     if (out !== "ongoing") {
       setOutcome(out);
@@ -122,11 +122,27 @@ export default function GameDemo() {
     setQuizIdx(0); setPreAns({}); setPostAns({}); setOutcome(""); setResult(null); setServerMsg("");
   }
 
+  // Terbangkan kartu lalu putuskan. x di-reset SEBELUM kartu baru muncul
+  // sehingga kartu berikutnya selalu mulai dari tengah (tidak nyangkut off-screen).
+  function commit(choice: "yes" | "no") {
+    if (busyRef.current || phase !== "game") return;
+    busyRef.current = true;
+    const fly = choice === "yes" ? 460 : -460;
+    animate(x, fly, {
+      duration: 0.28,
+      ease: [0.2, 0.8, 0.2, 1],
+      onComplete: () => {
+        x.set(0);
+        decide(choice);
+        busyRef.current = false;
+      },
+    });
+  }
+
   function onDragEnd() {
+    if (busyRef.current) return;
     if (Math.abs(x.get()) > 90) {
-      const choice = x.get() > 0 ? "yes" : "no";
-      animate(x, x.get() > 0 ? 480 : -480, { duration: 0.3 });
-      setTimeout(() => decide(choice), 120);
+      commit(x.get() > 0 ? "yes" : "no");
     } else {
       animate(x, 0, { type: "spring", stiffness: 400, damping: 30 });
     }
@@ -174,8 +190,9 @@ export default function GameDemo() {
           )}
 
           {phase === "game" && (
-            <motion.div className="scard" style={{ x, rotate }} drag="x"
-              dragConstraints={{ left: 0, right: 0 }} onDragEnd={onDragEnd}>
+            <motion.div key={`${scenario.id}-${turn}`} className="scard" style={{ x, rotate }}
+              drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={1} dragMomentum={false}
+              onDragEnd={onDragEnd}>
               <motion.span className="s-tag" style={{ position: "absolute", right: 16, top: 16, color: "var(--green)", opacity: yesOpacity }}>SETUJU</motion.span>
               <motion.span className="s-tag" style={{ position: "absolute", left: 16, top: 16, color: "var(--red)", opacity: noOpacity }}>TOLAK</motion.span>
               <span className="s-tag">{scenario.tag}</span>
@@ -205,8 +222,8 @@ export default function GameDemo() {
         </div>
 
         <div className="controls">
-          <button className="ctrl no" disabled={phase !== "game"} onClick={() => decide("no")}>✕ Tolak</button>
-          <button className="ctrl yes" disabled={phase !== "game"} onClick={() => decide("yes")}>✓ Setuju</button>
+          <button className="ctrl no" disabled={phase !== "game"} onClick={() => commit("no")}>✕ Tolak</button>
+          <button className="ctrl yes" disabled={phase !== "game"} onClick={() => commit("yes")}>✓ Setuju</button>
         </div>
 
         {(phase === "game" || phase === "result") && (
