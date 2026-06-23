@@ -1,0 +1,42 @@
+{
+  "name": "simkop-quest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulasi koperasi desa swipe-card untuk literasi Gen-Z — full-stack Next.js + Supabase.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.108.2",
+    "framer-motion": "11.18.2",
+    "next": "^15.5.19",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.7",
+    "@types/react": "19.0.7",
+    "@types/react-dom": "19.0.3",
+    "@vitest/coverage-v8": "2.1.8",
+    "autoprefixer": "10.4.20",
+    "postcss": "^8.5.10",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.7.3",
+    "vitest": "2.1.8"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  }
+}
