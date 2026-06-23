@@ -8,6 +8,61 @@
 
 ---
 
+## 0. HASIL EKSEKUSI — RUN 1 (BrowserAct, situs live)
+
+> **Dieksekusi**: 24 Juni 2026 via skill `browser-act` (stealth browser) terhadap **https://sim-kop-quest.vercel.app** (produksi).
+> **Subset prioritas tinggi** dieksekusi langsung di browser nyata.
+
+### Ringkasan
+| Metrik | Nilai |
+|---|---|
+| Skenario dieksekusi | 15 prioritas (LP, GAME, LB, API) |
+| ✅ PASS | 15 |
+| ❌ FAIL | 0 (setelah perbaikan) |
+| 🐞 Bug ditemukan | **1 Critical** (BUG-001) — sudah diperbaiki & diverifikasi |
+
+### Hasil per skenario
+| ID | Skenario | Status |
+|---|---|---|
+| LP-001 | `/` termuat, title benar, konten ter-render | ✅ PASS |
+| API-001 | `GET /api/leaderboard` → JSON 8 baris seed | ✅ PASS |
+| GAME-001 | Username < 2 char → tombol Mulai disabled | ✅ PASS |
+| GAME-002 | Username valid → tombol Mulai aktif | ✅ PASS |
+| GAME-003 | Quiz pra-game tampil (1/3, 4 opsi) | ✅ PASS |
+| GAME-004 | Klik opsi lanjut ke soal berikutnya | ✅ PASS |
+| GAME-005 | Setelah 3 soal → fase game (kartu skenario) | ✅ PASS |
+| GAME-006 | Kartu: tag, emoji, title, text, tip lengkap | ✅ PASS |
+| GAME-011 | Tombol Setuju/Tolak aktif hanya di fase game | ✅ PASS |
+| GAME-012 | Metrik berubah tepat (Gratifikasi→Setuju: Kas 50→58, Trust 50→24, SHU 0→4) | ✅ PASS |
+| GAME-013 | Giliran counter 1/20 → 2/20 | ✅ PASS |
+| GAME-015 | Literasi awal ditampilkan ("3/3") | ✅ PASS |
+| LB-001 | Tabel: #, Username, Hasil, Δ Literasi, Skor | ✅ PASS |
+| LB-003/004/008 | Medal 🥇, "🏆 Menang", skor "9.840" (id-ID) | ✅ PASS |
+| LB-009 | Indikator "Live realtime aktif" menyala | ✅ PASS |
+
+### 🐞 BUG-001: Hydration Next.js terblokir CSP — halaman blank di browser nyata
+| Field | Value |
+|---|---|
+| **Severity** | **Critical** |
+| **Ditemukan saat** | LP-001 / GAME-001 (eval DOM kosong, `get markdown` kosong) |
+| **Browser** | Stealth (Chromium) — terdampak semua browser nyata |
+
+**Hasil Diharapkan:** Halaman menampilkan hero, game, leaderboard.
+**Hasil Aktual (sebelum fix):** `<main>` hilang, 0 tombol/input, title kosong — halaman blank total. `web_fetch` tidak menangkapnya karena tidak menegakkan CSP.
+
+**Root Cause:** `next.config.mjs` menetapkan `Content-Security-Policy: script-src 'self'` tanpa `'unsafe-inline'`/nonce. Browser memblokir inline bootstrap/streaming script Next.js → hydration gagal → React 19 mengosongkan konten SSR.
+
+**Perbaikan:**
+1. CSP dipindah ke `src/middleware.ts`.
+2. Dicoba pendekatan nonce; ternyata nonce tidak ter-propagate ke script Next pada setup ini (HTML server tidak memuat atribut nonce).
+3. Final: `script-src 'self' 'unsafe-inline'`. App ter-render & hydrate normal (diverifikasi: h1 ada, 3 tombol, 1 input, metrik bereaksi). Lapisan keamanan lain tetap ketat (frame-ancestors none, object-src none, connect-src dibatasi Supabase, base-uri self, HSTS, RLS, anti-cheat).
+
+**Tradeoff jujur:** `'unsafe-inline'` pada script-src adalah pelemahan proteksi XSS dibanding nonce penuh. TODO produksi: migrasi ke CSP nonce/hash yang ter-propagate benar. Risiko XSS saat ini rendah karena React meng-escape output secara default dan tidak ada render HTML mentah dari input pengguna.
+
+**Status:** ✅ FIXED & VERIFIED (commit `583a12c`).
+
+---
+
 ## 1. TEST EXECUTION SUMMARY
 
 | # | Area | ID | Skenario | Status |
