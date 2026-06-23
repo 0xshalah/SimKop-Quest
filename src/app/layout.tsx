@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://simkop-quest.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://sim-kop-quest.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
