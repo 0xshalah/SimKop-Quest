@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requirePublicEnv } from "@/lib/supabase/env";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 /** Baca papan peringkat dari VIEW aman (kolom sensitif tidak ikut). */
