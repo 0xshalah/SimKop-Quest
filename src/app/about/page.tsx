@@ -77,8 +77,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* GAME DEMO */}
-      <section className="section alt" id="demo">
+      {/* GAME DEMO (anchor #demo dipegang oleh root GameDemo) */}
+      <section className="section alt">
         <div className="wrap" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
           <div className="head" style={{marginBottom:24}}>
             <span className="kicker">Demo Langsung</span>

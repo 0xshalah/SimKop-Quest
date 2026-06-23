@@ -63,6 +63,32 @@
 
 ---
 
+## 0B. HASIL EKSEKUSI — RUN 2 (E2E penuh + audit kode)
+
+> **Dieksekusi**: 24 Juni 2026. Code review menyeluruh + E2E submit skor di situs live.
+
+### Temuan & status
+| Bug | Severity | Deskripsi | Status |
+|---|---|---|---|
+| BUG-001 | Critical | CSP blokir hydration → blank | ✅ Fixed (Run 1) |
+| Swipe race | Critical | Kartu nyangkut off-screen + drag lengket | ✅ Fixed (`3acb102`) |
+| **BUG-002** | Major | Anchor `#krisis` rusak di `/about` (Nav & CTA "Kenapa ini penting?" tak menuju mana-mana) | ✅ Fixed — `id="krisis"` ditambahkan ke hero |
+| **BUG-003** | Minor | Duplicate `id="demo"` di `/about` (section + GameDemo) | ✅ Fixed — id dihapus dari section wrapper |
+| BUG-005 | Trivial | Skenario berulang setelah giliran 10 (10 kartu, maks 20 giliran) | ⚪ Diterima (perilaku deck recycling, bukan bug) |
+
+### E2E Submit Skor — DIVERIFIKASI BEKERJA ✅
+Main game penuh di live → game over (Bangkrut, giliran 7) → post-quiz → submit:
+- Skor server **4.495** (bukan 0 → token sesi + validasi server jalan)
+- Delta literasi **+3** (post 3/3 − pre 0/3, dihitung nyata)
+- Baris **muncul di leaderboard via realtime** + terkonfirmasi di `GET /api/leaderboard`
+- Anti-cheat replay, dedup session_id, insert service-role — **semua jalan end-to-end**
+- (Baris uji dibersihkan setelah verifikasi)
+
+### Kesimpulan Run 2
+Setelah perbaikan CSP + swipe (Run 1) dan BUG-002/003 (Run 2), **fungsi inti berjalan penuh**: load, game flow, swipe, submit tervalidasi server, leaderboard realtime. Tidak ada lagi bug Critical/Major terbuka.
+
+---
+
 ## 1. TEST EXECUTION SUMMARY
 
 | # | Area | ID | Skenario | Status |

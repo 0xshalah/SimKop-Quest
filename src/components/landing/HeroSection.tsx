@@ -15,7 +15,7 @@ const item = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transiti
 
 export default function HeroSection() {
   return (
-    <section className="lp-hero">
+    <section className="lp-hero" id="krisis">
       <div className="wrap hero-grid">
         {/* copy */}
         <motion.div variants={container} initial="hidden" animate="show">
